@@ -1,0 +1,62 @@
+{
+  "pages": [
+    "pages/addaddress/main",
+    "pages/myaddress/main",
+    "pages/mine/main",
+    "pages/inter/main",
+    "pages/sureorder/main",
+    "pages/shopping-cart/main",
+    "pages/com-detail/main",
+    "pages/index/main",
+    "pages/myorders/main"
+    
+    
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarTitleText": "U鲜",
+    "navigationBarBackgroundColor":"#ff0000",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#999",
+    "backgroundColor": "#fafafa",
+    "selectedColor": "#333",
+    "borderStyle": "white",
+
+    "list": [{
+      "text": "首页",
+      "pagePath": "pages/index/main",
+      "iconPath": "static/tabs/index.png",
+      "selectedIconPath": "static/tabs/index-active.png"
+    }, {
+      "text": "购物车",
+      "pagePath": "pages/shopping-cart/main",
+      "iconPath": "static/tabs/shopping-cart.png",
+      "selectedIconPath": "static/tabs/shopping-cart.png"
+    },{
+      "text": "我的",
+      "pagePath": "pages/mine/main",
+      "iconPath": "static/tabs/mine.png",
+      "selectedIconPath": "static/tabs/mine-active.png"
+    }],
+
+    "items": [{
+      "text": "首页",
+      "pagePath": "pages/index/main",
+      "iconPath": "static/tabs/index.png",
+      "selectedIconPath": "static/tabs/index-active.png"
+    }, {
+      "text": "购物车",
+      "pagePath": "pages/shopping-cart/main",
+      "iconPath": "static/tabs/shopping-cart.png",
+      "selectedIconPath": "static/tabs/shopping-cart.png"
+    },{
+      "text": "我的",
+      "pagePath": "pages/mine/main",
+      "iconPath": "static/tabs/mine.png",
+      "selectedIconPath": "static/tabs/mine-active.png"
+    }],
+    "position": "bottom"
+  }
+}
