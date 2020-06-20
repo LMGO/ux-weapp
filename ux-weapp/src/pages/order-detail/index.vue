@@ -1,13 +1,17 @@
 <template>
   <div>
     <div class="homeBox" v-for="(item,index) in orderdetail" :key="index">
+      <div class="topstutas">
+        <div class="text">{{status}}</div>
+        <!-- <div class="rest-time" v-if="time">{{resttime}}</div> -->
+      </div>
       <!-- 收货人信息 -->
       <div class="myinfo">
         <div class="title">收货人信息</div>
         <div class="receinfo">
           <span class="name">收货人：{{item.address.name}}</span>
           <span class="tele">电&ensp; 话：{{item.address.telephone}}</span>
-          <span class="changeinfo" @click="change()" >{{changeoradd}}</span>
+          <!-- <span class="changeinfo" @click="change()" >{{changeoradd}}</span> -->
         </div>
         <div class="address">地&ensp; 址：{{item.address.address}}</div>
       </div>
@@ -43,40 +47,54 @@
         <div class="compute">
           合计：
           <span class="yen">&yen;</span>
-          <span class="price">{{totalPrice}}</span>
+          <span class="price">{{item.totalPrice}}</span>
         </div>
-        <div class="btn" @click="topay()">确认订单</div>
+        <div class="btn" v-show="topay" @click="tofinishpay(item)">去付款</div>
+        <div class="btn" v-show="tosurereceive" @click="surereceive(item)">确认收货</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+
 import { formatTime } from '@/utils/index'
+
 export default {
   data () {
     return {
-      changeoradd: '切换',
-      orderitems:[],//购物车选中的信息
-      totalPrice:0.00,
+      topay:false,//控制底部按钮
+      tosurereceive:false,//控制底部按钮
+      time: true,//是否显示剩余时间
+      resttime:"",
+      status:'',
       orderdetail:[
       //   {
-      //   address:{
-      //     sid:7,
-      //     uid:'',
-      //     name:"马义行",//默认的收货人信息
-      //     telephone:"18487315405",
-      //     address:"云南省昭通",
-      //   },
-      //   orderItems:[{//用户选取的商品列表信息
-      //       checked: false,
-      //       cid:"0",//商品id
-      //       cname:'布诺芬',
-      //       imgId:["http://pic.ruiwen.com/allimg/201611/70-16112p9104u25.jpg"],
-      //       type:1,//商品类型
-      //       itemId: 51,
-      //       itemPrice:5.6,//商品单价
-      //       number:4,//选中的商品数量
+      //       oid:"0",
+      //       totalPrice:"79.80",
+      //       status:"",
+      //       orderTime:'',
+      //       deliveryTime: "",
+      //       address:{
+      //           sid: 7,
+      //           uid: "o6ADs4ntkX4EHTllQSpPktUu_elg",
+      //           name: "沐雙惜",
+      //           telephone: "18487315400",
+      //           address: "昆明市云南大学楸苑三栋",
+      //           default: true,
+      //           delete: false
+      //       },
+      //       orderItems:[{       //订单里包含的订单项商品
+      //         "itemId": 1,
+      //         "cid": "f8275737-1aa4-49a2-85bf-441f1576cc74",
+      //         "imgId": [
+      //           "http://cdn.fengblog.xyz/5953e202-d291-42ff-8957-a30aa43eb588timg (3).jpeg"
+      //         ],
+      //         "cname": "鸡肉",
+      //         "type": 2,
+      //         "itemPrice": 30,
+      //         "number": 2,
+      //         "checked": false
       //       }]
       // }
       ],
@@ -88,207 +106,126 @@ export default {
     }
   },
 
-  components: {
-    // card
-  },
-
   methods: {
-    change(){
-      console.log(this.changeoradd)
-      if(this.changeoradd=="切换"){
-        // 修改默认地址页
-        wx.navigateTo({
-          url:'../myaddress/main'
-        })
-      }
-      else{
-        // 新增地址页
-          wx.navigateTo({
-          url:'../addaddress/main'
-        })
-      }
-    },
-    topay(){
+    getoederdetail(e){
       let self = this;
-      let num = '';
-      for (let i = 0; i < 5; i++) {
-        num += Math.floor(Math.random() * 10);
+      let params = {
+        oid:e
       }
-      console.log(num);
-      const time = new Date()
-      const ordertime = formatTime(time);
-      const oid = time.getTime().toString() + num.toString();
-      console.log('订单号'+oid);
-      console.log('下单时间'+ordertime)
-          wx.showModal({
+      self.$fly.get(self.url+'/order/getOrder',
+        params
+      )
+      .then(res=>{
+        console.log(res);
+       this.orderdetail[0]= res.data.content;
+       this.orderdetail[0].address.telephone.toString();
+        let tele = this.orderdetail[0].address.telephone[0]+this.orderdetail[0].address.telephone[1]+this.orderdetail[0].address.telephone[2]+'****'+this.orderdetail[0].address.telephone[7]+this.orderdetail[0].address.telephone[8]+this.orderdetail[0].address.telephone[9]+this.orderdetail[0].address.telephone[10];
+        this.$set(this.orderdetail[0].address,"telephone",tele);
+        if(this.orderdetail[0].status==1){
+          this.status = "等待买家付款~";
+          this.topay = true
+          this.tosurereceive = false;
+        }else if(this.orderdetail[0].status==2||this.orderdetail[0].status==4){
+              this.status = "等待卖家发货~";
+              this.tosurereceive = false;
+              this.topay = false
+        }else if(this.orderdetail[0].status==4){
+              this.status = "订单已完成";
+              this.tosurereceive = false;
+              this.topay = false
+        }else{
+          this.topay = false
+          this.tosurereceive = true;
+          this.status = "卖家已发货~";
+        }
+        this.$forceUpdate();
+
+      })
+      .catch(err=>{
+        console.log(err)
+      })
+    },
+        // 支付
+    tofinishpay(e){
+      console.log(e)
+      let self = this;
+      wx.showModal({
             title: '确认支付？',
-            content: self.totalPrice,
+            content: "合计："+e.totalPrice,
             success: function (res) {
-                if (res.confirm) {
-                  console.log('用户点击确定')
-                  //提交订单
-                  self.$fly.request({
-                    method:'post',
-                    url:self.url+'/order/generateOrder',
-                    body:{
-                            itemList:self.orderitems,
-                            order:{
-                              'deliveryTime':'',//空，管理端负责
-                              'oid':oid,
-                              'orderTime':ordertime,
-                              'sid':self.orderdetail[0].address.sid,
-                              'status':2,//此时为待发货状态
-                              'totalPrice':self.totalPrice
-                            }
-                            
-                        }
-                  })
+                if (res.confirm) { 
+                  let params = {
+                    oid:e.oid,
+                    status:2,//此时为带发货状态
+                  }
+                  self.$fly.request(self.url+"/order/updateOrderStatus",  {oid:e.oid,status:2,}, {method:"PUT"})
                   .then(res=>{
-                    console.log(res)
+                  console.log(res)
                   if(res.data.isSuccess){
                       wx.showToast({
                         title: '支付成功！',
                         icon: 'success',
                         duration: 1500
                       })
-                  let e = 'waitdeliver'
+                      let e = 'waitdeliver'
                      wx.redirectTo({
                           url:'../myorders/main?value='+e,
                      })
-                     //删除订单项
-                      for (const i of self.orderitems) {
-                        self.del(i)
-                      }
                   }
                   })
                   .catch(err=>{
                     console.log(err)
                   })
-
                 }else{
-                  console.log('用户点击取消')
-                  //提交订单
-                  self.$fly.request({
-                    method:'post',
-                    url:self.url+'/order/generateOrder',
-                    body:{
-                            itemList:self.orderitems,
-                             order:{
-                              oid:oid,
-                              deliveryTime:'',//空，管理端负责
-                              orderTime:ordertime,
-                              sid:self.orderdetail[0].address.sid,
-                              status:1,//此时为已待付款状态
-                              totalPrice:self.totalPrice
-                            }
-                        }
-                  })
-                  .then(res=>{
-                    console.log(res)
-                   if(res.data.isSuccess){
-                      wx.showToast({
-                        title: '取消支付！',
-                        icon: 'success',
-                        duration: 1500
-                      })
-                  let e = 'waitpay'
-                     wx.redirectTo({
-                          url:'../myorders/main?value='+e,
-                     })
-                     //删除订单项
-                      for (const i of self.orderitems) {
-                        self.del(i)
-                      }
-                  }
-                  })
-                  .catch(err=>{
-                    console.log(err)
-                  })
+
                 }
- 
             }
-      })
-    }, 
-    //删除订单项
-    async del(e){
-      console.log(e)
-      let self = this;
-      // for(let i = 0;i<self.List.length;i++){
-      //   if(self.List[i].checked){
-      //     this.$set(e,"checked",false);
-      //   }
-      // }
-      //删除接口
-      let params = {
-        itemId: i
-      }
-      self.$fly.delete(self.url+"/shoppingCart/deleteShoppingItem",
-          params
-      )
-      .then(async res=>{
-        if(res.data.isSuccess){
-        }
-      })
-      .catch(err=>{
-        console.log(err)
-      })
+        })
     },
-      
-    
-    new(){
-      wx.showLoading({ title: '拼命加载中...' })
-      console.log(this.orderitems+"数组")
-      // 获取订单信息
+        //确认收货
+    surereceive(e){
       let self = this;
-      self.$fly.request({
-        method:'post',
-        url:self.url+'/order/getOrderBody',
-        body:{
-                itemList:self.orderitems,
-                uid:self.$store.state.openId
-              
-            }
-      })
-      .then(res=>{
-        console.log(res.data)
-        if(res.data.isSuccess){
-          this.orderdetail[0] = res.data.content;
-          console.log(this.orderdetail)
-          wx.hideLoading()
-          if(this.orderdetail[0].address.sid!=null){
-            this.changeoradd="切换"
-                // 隐藏电话号码，可使用截取字符方法
-            this. orderdetail[0].address.telephone.toString();
-            let tele = this.orderdetail[0].address.telephone[0]+this.orderdetail[0].address.telephone[1]+this.orderdetail[0].address.telephone[2]+'****'+this.orderdetail[0].address.telephone[7]+this.orderdetail[0].address.telephone[8]+this.orderdetail[0].address.telephone[9]+this.orderdetail[0].address.telephone[10];
-            this.$set(this.orderdetail[0].address,"telephone",tele);
-          }else{
-            his.changeoradd="添加"
-          }
-          this.$forceUpdate();
-
+        let params = {
+          oid:e.oid,
+          status:4,//此时为已完成状态
         }
-      })
-      .catch(err=>{
-        console.log(err)
-      })
-
+        self.$fly.put(self.url+"/order/updateOrderStatus",self.$qs.stringify(
+              params
+          ))
+        .then(res=>{
+        console.log(res)
+        if(res.data.isSuccess){
+            wx.showToast({
+              title: '确认收货成功！',
+              icon: 'success',
+              duration: 1500
+            })
+            let e = 'finish'
+            wx.redirectTo({
+                url:'../myorders/main?value='+e,
+            })
+        }
+        })
+        .catch(err=>{
+          console.log(err)
+        })
     },
 
   },
   onLoad: function(options){
-    let items = JSON.parse(options.items);
-    this.totalPrice = options.totalPrice
-    this.orderitems = items;
-    //请求订单内容
-    console.log(this.orderitems)
+    console.log(options.id)
+    this.getoederdetail(options.id)
+    // this.resttime = formatTime(new Date())-this.orderdetail[0].orderTime;
 
-    // 根据订单中收货人信息是否为空更改按钮文字
   },
   created () {
     // let app = getApp()
   },
-   async onShow(){
-    await this.new()
+  onShow(){
+    // await this.new()
+    // 隐藏电话号码，可使用截取字符方法
+    
+    
   }
 }
 </script>
@@ -303,7 +240,19 @@ export default {
     overflow-y:scroll;
     z-index: -999;//背景
 }
+.topstutas{
+  border-top: 1px solid rgb(221, 219, 219);
+  height: 150rpx;
+  background-color: red;
+  width: 100vw;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 40rpx;
+  padding-left: 100rpx;
 
+}
 .myinfo{
   // height: 200rpx;
   background-color: #fff;
@@ -327,15 +276,16 @@ export default {
     margin: 15rpx 0;
     display: flex;
     flex-direction: row;
-    font-size: 25rpx;
+    font-size: 30rpx;
     .name{
       width: 250rpx;
       flex-shrink: 1;
+
     }
     .tele{
       flex: 1;
       flex-shrink: 1;
-
+      
     }
     .changeinfo{
       font-size: 25rpx;
@@ -353,11 +303,14 @@ export default {
 }
 //渐变分割线
 .back{
-  margin: 0 auto;
+  margin: 25rpx auto;
   height: 1px;
   width: 96vw;
   background: -webkit-linear-gradient(left,red,white,blue,red,white,blue,red,white,blue,red,white,blue,red,white,blue); 
 }
+// .orderinfo{
+//   margin-top: 25rpx;
+// }
 .iteminfo{
   background-color: #ffffff;
   display: flex;

@@ -8,8 +8,8 @@
       </div>
     </div>
     <!-- 购物车列表 -->
-    <div>
-      <div class="list" v-for="(item,index) in List" :key="index">
+    <div v-else>
+      <div class="list" v-for="(item,index) in getlist" :key="index">
         <!-- 选中框 -->
         <div class="circle" @click="check(item)">
           <!-- <input type="checkbox"
@@ -20,7 +20,7 @@
           <img v-show="item.checked" src="../../../static/images/checked.png" alt="">
         </div>
           <div class="centerimg">
-              <img :src="item.imgId[0]" alt="">
+              <img :src="item.imgId[0]" alt="" @click="tocomdetail(item.cid)">
           </div>
           <div class="right">
               <div class="r-top">
@@ -52,15 +52,13 @@
 
 <script>
 
-import { add } from '@/utils/index'
 export default {
   data () {
     return {
       List:[],
+      Listdelay:[],//临时list
       totalPrice:0.00,
-      hasList: true,//判断购物车是否有数据
       nothing:false,
-      // checked:''//是否选中
     }
   },
 
@@ -69,6 +67,76 @@ export default {
   },
 
   methods: {
+    tocomdetail(e){
+      console.log(e)
+      wx.navigateTo({
+        url:'../com-detail/main?id='+e,
+      })
+    },
+    // 获取购物车商品数量
+    async  getshopcount(){
+        console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhh")
+      let self = this;
+      let params = {
+        uid: self.$store.state.openId
+      }
+    await  self.$fly.get(self.url+"/shoppingCart/getItemCount",
+          params
+      )
+      .then(res=>{
+        console.log("数量",res.data.content)
+        if(res.data.content>0){
+            let num = res.data.content;
+            wx.setTabBarBadge({
+              index: 1,
+              text: num.toString()
+            })
+        }
+        else{
+          wx.removeTabBarBadge({
+            index: 1,
+          });
+        }
+      })
+      .catch(err=>{
+        console.log(err)
+        wx.showToast({
+          title: '服务器异常！',
+          icon: 'none',
+          duration: 1500
+        })
+      })						   
+    },
+    // 获取购物车列表
+    async  getshoppinglist(){
+      let self = this;
+      let params = {
+        uid: self.$store.state.openId
+      }
+    await  self.$fly.get(self.url+"/shoppingCart/getShoppingItems",
+          params
+      )
+      .then(async res=>{
+        if(res.data.isSuccess){
+            console.log("列表项",res.data.content)
+            if(res.data.content != undefined &&res.data.content.length!=0){
+              let arr = res.data.content;
+              for(let i=0;i<arr.length;i++){
+                this.$set(this.List,i,arr[i])
+              }
+              console.log("返回的数组",res.data.content);
+            }
+            else{
+              this.nothing = true
+            }
+        }
+        this.$forceUpdate();
+
+      })
+      .catch(err=>{
+        console.log(err)
+      })						   
+    },
     check(e){
       if(!e.checked){
         this.$set(e,"checked",true);
@@ -77,20 +145,24 @@ export default {
         this.$set(e,"checked",false);
       }
     },
-    subcount(e){
-      this.$set(e,"checked",true);
+    async  subcount(e){
       if(e.number>1){
         e.number = e.number -1;
         this.$set(e,"number",e.number);
+        //同步数据到数据库
+        await  this.changenumber(e)
+              //  this.$set(e,"checked",true);
       }
-      //同步数据到数据库
+
     },
-    addcount(e){
+   async addcount(e){
       //查库存
-      this.$set(e,"checked",true);
       if(e.number<5){
         e.number = e.number +1;
         this.$set(e,"number",e.number);
+        await  this.changenumber(e)
+              //  this.$set(e,"checked",true);
+
       }
       else{
         wx.showToast({
@@ -102,14 +174,61 @@ export default {
       //同步数据到数据库
       // 修改数量接口
     },
-    del(e){
+  async  changenumber(e){
       let self = this;
-      for(let i = 0;i<self.List.length;i++){
-        if(self.List[i].checked){
-          this.$set(e,"checked",false);
-        }
+
+      let params = {
+        itemId: e.itemId,
+        number:e.number
       }
+      console.log(e.itemId)
+      console.log(e.number)
+      // self.$fly.request(self.url+"/shoppingCart/updateShoppingItem", params, {method:"PUT"})
+      self.$fly.put(self.url+"/shoppingCart/updateShoppingItem",self.$qs.stringify(
+          params
+      )    
+      )
+      .then(async res=>{
+        if(res.data.isSuccess){
+          console.log("下面要更新列表")
+          await  this.getshoppinglist();
+        }
+      })
+      .catch(err=>{
+        console.log(err)
+      })
+    },
+    async del(e){
+      console.log(e)
+      let self = this;
+      // for(let i = 0;i<self.List.length;i++){
+      //   if(self.List[i].checked){
+      //     this.$set(e,"checked",false);
+      //   }
+      // }
       //删除接口
+      let params = {
+        itemId: e.itemId
+      }
+      self.$fly.delete(self.url+"/shoppingCart/deleteShoppingItem",
+          params
+      )
+      .then(async res=>{
+        if(res.data.isSuccess){
+          console.log("下面要更新角标")
+          this.getshopcount();
+          console.log("下面要更新列表")
+        await  this.getshoppinglist();
+          wx.showToast({
+            title: '删除成功！',
+            icon: 'success',
+            duration: 1500
+          })
+        }
+      })
+      .catch(err=>{
+        console.log(err)
+      })
     },
     // 去结算
     topay(){
@@ -117,9 +236,10 @@ export default {
       let itemList = [];
       for(let i = 0;i<self.List.length;i++){
         if(self.List[i].checked){
-          let item ={};
-          item.itemId = self.List[i].itemId;
-          itemList[i]=item;
+          // let item ={};
+          // item.itemId = self.List[i].itemId;
+          // itemList[i]=item;
+          itemList.push(self.List[i].itemId);//购物项的整数数组
         }
       }
       console.log(itemList);
@@ -151,6 +271,12 @@ export default {
       self.totalPrice=self.totalPrice.toFixed(2)
       return self.totalPrice;
       },
+    getlist:function(){
+      let self = this;
+      self.List = self.Listdelay;
+      console.log(self.List)
+      return self.List;
+    }
     },
 
   created () {
@@ -161,34 +287,13 @@ export default {
   //  })
 
   },
-  onShow(){
-    //获取购物车商品项数量
-    let num = 2;
-    wx.setTabBarBadge({
-      index: 1,
-      text: num.toString()
-    })
+ async onShow(){
+    let self=this;
+    // 获取购物车数量
+    self.getshopcount()
     //获取购物车列表
-    let shoppingItemList=[{
-      itemId:"0",//商品对应的购物车项
-      // cid:'0',
-      cname:'布诺芬',
-      imgId:["http://pic.ruiwen.com/allimg/201611/70-16112p9104u25.jpg"],
-      type:"医护",//商品类型
-      itemPrice:39.9,//商品单价
-      number:2,//商品数量
-      checked:false
-	  },{
-      itemId:"1",//商品对应的购物车项
-      cname:"医用外科口罩",//商品名称
-      imgId:["https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png"],
-      type:"医护",//商品类型
-      itemPrice:9.9,//商品单价
-      number:5,//商品数量
-      checked:false
-    }];
-    this.List = shoppingItemList;
-}
+    await self.getshoppinglist()
+  }
 }
 
 

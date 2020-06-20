@@ -2,12 +2,12 @@
   <div class="homeBox"> 
     <!-- 导航栏 -->
     <ul class="nav">
-      <li :class="[ishot?'active':'']" @click="gethotlist('热销')">热销</li>
-      <li :class="[isvagetable?'active':'']" @click="getvagetablelist('蔬菜')">蔬菜</li>
-      <li :class="[ismeat?'active':'']" @click="getmeatlist('肉禽')">肉禽</li>
-      <li :class="[isseafood?'active':'']" @click="getseafoodlist('海产')">海产</li>
-      <li :class="[isdaily?'active':'']" @click="getdailylist('日用')">日用</li>
-      <li :class="[ismedical?'active':'']" @click="getmedicallist('医护')">医护</li>
+      <li :class="[ishot?'active':'']" @click="gethotlist()">热销</li>
+      <li :class="[isvagetable?'active':'']" @click="getvagetablelist(1)">蔬菜</li>
+      <li :class="[ismeat?'active':'']" @click="getmeatlist(2)">肉禽</li>
+      <li :class="[isseafood?'active':'']" @click="getseafoodlist(3)">海产</li>
+      <li :class="[isdaily?'active':'']" @click="getdailylist(4)">日用</li>
+      <li :class="[ismedical?'active':'']" @click="getmedicallist(5)">医护</li>
     </ul>
     <!-- 热销页面 -->
     <!-- 轮播图 -->
@@ -21,7 +21,7 @@
     <div class="listhot" v-show="ishot">
       <div class="hot">热销榜</div>
         <ul class="ullist">
-          <li v-for="(item,index) in comlist" :key="index" @click="tomediclistdatail(item.cid)">
+          <li v-for="(item,index) in comlist" :key="index" @click="tocomdetail(item.cid)">
             <div class="left">
               <img :src="item.imgId[0]" alt="">
             </div>
@@ -51,7 +51,7 @@
       </div>
       <div :class="{listhot:ishot,list:!ishot}">
       <ul class="ullist">
-        <li v-for="(item,index) in items" :key="index" @click="tomediclistdatail(item.id)">
+        <li v-for="(item,index) in items" :key="index" @click="tocomdetail(item.id)">
           <div class="left">
               <img :src="item.imgId[0]" alt="">
           </div>
@@ -115,7 +115,6 @@ export default {
       isseafood: false,
       isdaily: false,
       ismedical: false,
-      list: "热销列表",
       showmask:false,//添加到购物者的遮罩层
       images:['https://iknow-pic.cdn.bcebos.com/8ad4b31c8701a18b82ac2fae992f07082938fe8f?x-bce-process=image/resize,m_lfit,w_600,h_800,limit_1','http://pic.ruiwen.com/allimg/201611/70-16112p9104u25.jpg','https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png'],
       showswiper:true,//默认显示热销列表，包含轮播图
@@ -124,64 +123,66 @@ export default {
       add:{
         cid:'',
         cname:'',
-        imgId:[""],
+        imgId:[],
         price:0,
         repertory:0,
         description:'',
-        type:'',
+        type:0,
         saleVolume:0//销量
       },//选择数量界面
       count:1,
-      comlist:[{
-        cid:'0',
-        cname:'布诺芬',
-        imgId:["http://pic.ruiwen.com/allimg/201611/70-16112p9104u25.jpg"],
-        price:9.9,
-        repertory:15,
-        description:'防御病毒有效率高',
-        type:'医护',
-        saleVolume:10//销量
-      },
-      {
-        cid:'1',
-        cname:'医用外科口罩',
-        imgId:["https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png"],
-        price:39.9,
-        repertory:15,
-        description:'防御病毒有效率高',
-        type:'医护',
-        saleVolume:10//销量
-      },
-      {
-        cid:'1',
-        cname:'医用外科口罩',
-        imgId:["https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png"],
-        price:39.9,
-        repertory:15,
-        description:'防御病毒有效率高',
-        type:'医护',
-        saleVolume:10//销量
-      },
-      {
-        cid:'1',
-        cname:'医用外科口罩',
-        imgId:["https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png"],
-        price:39.9,
-        repertory:15,
-        description:'防御病毒有效率高',
-        type:'医护',
-        saleVolume:10//销量
-      },
-      {
-        cid:'1',
-        cname:'医用外科口罩',
-        imgId:["https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png"],
-        price:39.9,
-        repertory:15,
-        description:'防御病毒有效率高',
-        type:'医护',
-        saleVolume:10//销量
-      }]
+      comlist:[
+      // {
+      //   cid:'0',
+      //   cname:'布诺芬',
+      //   imgId:["http://pic.ruiwen.com/allimg/201611/70-16112p9104u25.jpg"],
+      //   price:9.9,
+      //   repertory:15,
+      //   description:'防御病毒有效率高',
+      //   type:'医护',
+      //   saleVolume:10//销量
+      // },
+      // {
+      //   cid:'1',
+      //   cname:'医用外科口罩',
+      //   imgId:["https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png"],
+      //   price:39.9,
+      //   repertory:15,
+      //   description:'防御病毒有效率高',
+      //   type:'医护',
+      //   saleVolume:10//销量
+      // },
+      // {
+      //   cid:'1',
+      //   cname:'医用外科口罩',
+      //   imgId:["https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png"],
+      //   price:39.9,
+      //   repertory:15,
+      //   description:'防御病毒有效率高',
+      //   type:'医护',
+      //   saleVolume:10//销量
+      // },
+      // {
+      //   cid:'1',
+      //   cname:'医用外科口罩',
+      //   imgId:["https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png"],
+      //   price:39.9,
+      //   repertory:15,
+      //   description:'防御病毒有效率高',
+      //   type:'医护',
+      //   saleVolume:10//销量
+      // },
+      // {
+      //   cid:'1',
+      //   cname:'医用外科口罩',
+      //   imgId:["https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png"],
+      //   price:39.9,
+      //   repertory:15,
+      //   description:'防御病毒有效率高',
+      //   type:'医护',
+      //   saleVolume:10//销量
+      // }
+      ]
     };
   },
 
@@ -190,44 +191,108 @@ export default {
   },
 
   methods: {
-    gethotlist(e) {
+    // 热销
+    gethotlist() {
+      
       this.ishot = true;
       this.isvagetable = this.meat = this.isseafood = this.isdaily = this.ismedical = false;
-      this.list = e + "列表";
+      // this.list = e + "列表";
       this.showswiper = true;
+      //获取热销
+      let self = this;
+      self.$fly.get(self.url+"/mall/getRecommendCommodities")
+      .then(res=>{
+        wx.hideLoading()
+        self.comlist=res.data;
+      })
+      .catch(err=>{
+        wx.showToast({
+          title: '获取失败！',
+          icon: 'none',
+          duration: 1500
+      })
+        console.log(err)
+      })
+
     },
     getvagetablelist(e) {
       this.isvagetable = true;
       this.ishot = this.ismeat = this.isseafood = this.isdaily = this.ismedical = false;
-      this.list = e + "列表";
       this.showswiper = false;
+      this.getotherlist(e)
     },
     getmeatlist(e) {
       this.ismeat = true;
       this.ishot = this.isvagetable = this.isseafood = this.isdaily = this.ismedical = false;
-      this.list = e + "列表";
       this.showswiper = false;
+      this.getotherlist(e)
     },
     getseafoodlist(e) {
       this.isseafood = true;
       this.ishot = this.isvagetable = this.ismeat = this.isdaily = this.ismedical = false;
-      this.list = e + "列表";
       this.showswiper = false;
+      this.getotherlist(e)
     },
     getdailylist(e) {
       this.isdaily = true;
       this.ishot = this.isvagetable = this.ismeat = this.isseafood = this.ismedical = false;
-      this.list = e + "列表";
       this.showswiper = false;
+      this.getotherlist(e)
     },
     getmedicallist(e) {
       this.ismedical = true;
       this.ishot = this.isvagetable = this.ismeat = this.isdaily = this.iisdaily = false;
-      this.list = e + "列表";
       this.showswiper = false;
+      this.getotherlist(e)
+    },
+    // 获取相应类型
+    getotherlist(e) {
+      let self = this;
+      let params = {
+        type: e
+      }
+      self.$fly.get(self.url+"/mall/getCommoditiesByType",self.$qs.stringify(
+          params
+      ))
+      .then(res=>{
+          self.comlist = res.data.content
+      })
+      .catch(err=>{
+        console.log(err)
+      })
+    },
+    getshopcount(){
+      let self = this;
+      let params = {
+        uid: self.$store.state.openId
+      }
+      self.$fly.get(self.url+"/shoppingCart/getItemCount",
+          params
+      )
+      .then(res=>{
+        if(res.data.content>0){
+            let num = res.data.content;
+            wx.setTabBarBadge({
+              index: 1,
+              text: num.toString()
+            })
+        }else{
+          wx.removeTabBarBadge({
+            index: 1,
+          });
+        }
+      })
+      .catch(err=>{
+        console.log(err)
+        wx.showToast({
+          title: '服务器异常！',
+          icon: 'fail',
+          duration: 1500
+        })
+      })						   
     },
     // 跳到商品详情页
-    tomediclistdatail(e){
+    tocomdetail(e){
       console.log(e)
       wx.navigateTo({
         url:'../com-detail/main?id='+e,
@@ -259,21 +324,49 @@ export default {
     },
     addcount(){
       //小于当前库存
-      if(this.count<5){
-        this.count++
-      }else{
-        wx.showToast({
-          title: '库存不足！',
-          icon: 'none',
-          duration: 1500
-      })
-      }
+        if(this.count<this.add.repertory){
+          this.count++
+        }else{
+          wx.showToast({
+            title: '库存不足！',
+            icon: 'none',
+            duration: 1500
+        })
+        }
     },
     cofirmadd(e){
       let self = this;
       console.log(e);
       console.log(self.count);
       // 添加到购物车接口
+      let params = {
+        uid: self.$store.state.openId,
+        cid:e,
+        number:self.count
+      }
+      self.$fly.post(self.url+"/shoppingCart/addShoppingItem",self.$qs.stringify(
+                    params
+      ))
+      .then(res=>{
+        if(res.data.isSuccess){
+            self.getshopcount()//更新购物车数量
+            self.escshowmask()//隐藏添加界面
+            wx.showToast({
+              title: '添加成功！',
+              icon: 'success',
+              duration: 1500
+            })
+        }
+      })
+      .catch(err=>{
+        console.log(err)
+        wx.showToast({
+          title: '服务器异常！',
+          icon: 'none',
+          duration: 1500
+        })
+      })
+
     }
   },
 
@@ -304,11 +397,12 @@ export default {
   }
 },
   onShow(){
-    let num = 2;
-    wx.setTabBarBadge({
-      index: 1,
-      text: num.toString()
-    })
+    let self = this;
+    // 获取热销列表
+    wx.showLoading({ title: '拼命加载中...' })
+    self.gethotlist() 
+    // 获取购物车数量
+    self.getshopcount()
 }
 };
 </script>
@@ -465,14 +559,17 @@ li {
         .r-des{
           margin-top: 10rpx;
           flex-shrink: 1;
-          flex:1;
+          // flex:1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          height: 90rpx;
           .title{
-            font-size: 30rpx;
+            font-size: 25rpx;
             color: gray;
           }
         }
         .r-bot{
-          margin-bottom: 10rpx;
+          margin: 70rpx 0 10rpx 0;
           display: flex;
           flex-direction: row;
           align-items: center;

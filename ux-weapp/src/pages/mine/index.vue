@@ -13,11 +13,11 @@
     <div class="order">
       <div class="aui-head-access">
         <span class="aui-head-access-hd">我的订单</span>
-        <span class="aui-head-access-fr">全部<img src="../../../static/images/right-arrow.png" alt=""></span>
+        <span class="aui-head-access-fr" @click="totalorder('waitpay')">查看全部<img src="../../../static/images/right-arrow.png" alt=""></span>
       </div>
       <div class="threepart">
         <ul v-for="(item,index) in threepart" :key="index">
-          <li @click="todetail1(item.value)">
+          <li @click="totalorder(item.value)">
             <!-- 显示消息通知 -->
             <div v-if="item.show" class="aui-head-access-number">{{item.count}}</div>
             <img :src="item.icon" alt="">
@@ -29,7 +29,6 @@
 
         <div class="aui-head-access" v-for="(item,index) in list" :key="index" @click="tomyaddress()">
             <div class="aui-head-access-hd">{{item.name}}</div>
-            <!-- <span v-show="list.item.number" class="aui-head-access-number">{{daifukuan}}</span> -->
             <span class="aui-head-access-fr"><img src="../../../static/images/right-arrow.png" alt=""></span>
         </div>
 </section>
@@ -46,16 +45,10 @@ export default {
         {name:"我的收货地址",number:false}
       ],
       daifukuan:11,
-      // threepart:{
-      //       waitpay:{icon:"./../../static/images/wait-pay.png", text:"待付款", value:"older",show:true},
-      //       waitdeliver:{icon:"./../../static/images/wait-receive.png",text:"待发货",value:"baby",show:true},
-      //       waitreceive:{icon:"./../../static/images/wait-receive.png",text:"已发货",value:"baby",show:true},
-      //       finish:{icon:"./../../static/images/finish.png",text:"已完成",value:"emergency",show:false}
-      //     },
       threepart:[
             {icon:"./../../static/images/wait-pay.png", text:"待付款", value:"waitpay",show:true},
             {icon:"./../../static/images/wait-deliver.png",text:"待发货",value:"waitdeliver",show:true},
-            {icon:"./../../static/images/wait-receive.png",text:"已发货",value:"waitreceive",show:true},
+            {icon:"./../../static/images/wait-receive.png",text:"待收货",value:"waitreceive",show:true},
             {icon:"./../../static/images/finish.png",text:"已完成",value:"finish",show:false}
       ],
     }
@@ -66,37 +59,50 @@ export default {
   },
 
   methods: {
+    totalorder(e){
+      wx.navigateTo({
+             url:'../myorders/main?value='+e,
+         })
+      },
     tomyaddress(){
         wx.navigateTo({
              url:'../myaddress/main'
          })
     },
-    // userCenter(){
-
-    // },
-    // bindViewTap () {
-    //   const url = '../logs/main'
-    //   if (mpvuePlatform === 'wx') {
-    //     mpvue.switchTab({ url })
-    //   } else {
-    //     mpvue.navigateTo({ url })
-    //   }
-    // },
-    // clickHandle (ev) {
-    //   console.log('clickHandle:', ev)
-    //   // throw {message: 'custom test'}
-    // }
+    getnumber(){
+      let self = this;
+      let params = {
+            uid: self.$store.state.openId
+      }
+      self.$fly.get(self.url+"/order/getAllTypeNumberOfOrder",self.$qs.stringify(
+          params
+      ))
+      .then(res=>{
+        if(res.data.isSuccess)
+          self.threepart[0].count = res.data.content.waitingPay;
+          self.threepart[1].count = res.data.content.waitingDelivery;
+          self.threepart[2].count = res.data.content.waitingReceipt;
+          if(self.threepart[0].count==0){
+            self.$set(self.threepart[0],"show",false)
+          }
+          if(self.threepart[1].count==0){
+            self.$set(self.threepart[1],"show",false)
+          }
+          if(self.threepart[2].count==0){
+            self.$set(self.threepart[2],"show",false)
+          }
+      })
+      .catch(err=>{
+          console.log(err)
+      })
+    }
   },
 onShow(){
-console.log(this.$store.state.myWxInfo.nickName)
-this.user_name = this.$store.state.myWxInfo.nickName
-this.user_head = this.$store.state.myWxInfo.avatarUrl
-// 获取不同类型订单数量
-this.threepart[0].count = 1;
-this.threepart[1].count = 10;
-this.threepart[2].count = 10;
-// this.threepart.finish.count = 15
-// this.threepart[2].show=false;
+    // 获取不同类型订单数量
+    this.getnumber()
+    this.user_head=this.$store.state.myWxInfo.avatarUrl;
+    this.user_name=this.$store.state.myWxInfo.nickName;
+    
 },
   created () {
       

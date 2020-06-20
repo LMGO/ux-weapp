@@ -1,26 +1,27 @@
 <template>
   <div class="homeBox">
-    <swiper  class="swiper" indicator-dots="true" autoplay="true" interval="5000" duration="500">
-        <block v-for="(item, index) in comlist[0].imgId" :key="index">
+    <div v-for="(item, index0) in comlist" :key="index0">
+      <swiper  class="swiper" indicator-dots="true" autoplay="true" interval="5000" duration="500">
+        <block v-for="(i, index1) in item.imgId" :key="index1">
             <swiper-item>
-                <image :src="item" class="slide-image" mode="aspectFill"/>
+                <image :src="i" class="slide-image" mode="aspectFill"/>
             </swiper-item>
         </block>
-    </swiper>
-    <div class="cominfo">
-      <div class="price">
-        <span><span>{{comlist[0].cname}}</span><i>&yen;</i>{{comlist[0].price}}</span>
-        <div class="repandsale"> <span>月销： {{comlist[0].saleVolume}}</span> /<span>还剩： {{comlist[0].repertory}}</span> </div>
+      </swiper>
+      <div class="cominfo" >
+        <div class="price">
+          <span><span>{{item.cname}}</span><i>&yen;</i>{{item.price}}</span>
+          <div class="repandsale"> <span>月销： {{item.saleVolume}}</span> /<span>还剩： {{comlist[0].repertory}}</span> </div>
+        </div>
+        <div class="intro"> {{item.description}}</div>
       </div>
-      <div class="intro"> {{comlist[0].description}}</div>
-    </div>
-    <div class="imgshow" v-for="(item,index) in comlist[0].imgId" :key="index">
-      <img :src="item" alt="">
-    </div>
-    <!-- 底部两个按钮 -->
-    <div class="addorbuy"><span class="add" @click="showadd()">添加到购物车</span><span class="buy" @click="showbuy()">立即购买</span></div>
-    <!-- 遮罩层及购物车选择数量弹窗 -->
-    <div class="mask" v-show="showmask" @touchmove.stop.prevent="TouchMove()" @click="escshowmask()">
+      <div class="imgshow" v-for="(j,index2) in item.imgId" :key="index2">
+        <img :src="j" alt="">
+      </div>
+      <!-- 底部两个按钮 -->
+      <div class="addorbuy"><span class="add" @click="showadd(item)">添加到购物车</span><span class="buy" @click="showbuy(item)">立即购买</span></div>
+      <!-- 遮罩层及购物车选择数量弹窗 -->
+      <div class="mask" v-show="showmask" @touchmove.stop.prevent="TouchMove()" @click="escshowmask()">
         <div :class="{choosenumberbefore:chhoosenumber,choosenumberafter:!chhoosenumber,choosenumber:true}" @click.stop="">
           <!-- 取消 -->
           <div class="escadd"><img src="../../../static/images/esc.png" alt="" @click="escshowmask()"></div>
@@ -45,6 +46,7 @@
           </div>
           <div class="btn" @click.stop="cofirmadd()">确定</div>
         </div>
+      </div>
     </div>
   </div>
 </template>
@@ -59,16 +61,17 @@ export default {
       count:1,//默认数量
       chhoosenumber:true,
       value:'',
-      comlist:[{
-        cid:'0',
-        cname:'布诺芬',
-        imgId:['https://iknow-pic.cdn.bcebos.com/8ad4b31c8701a18b82ac2fae992f07082938fe8f?x-bce-process=image/resize,m_lfit,w_600,h_800,limit_1','http://pic.ruiwen.com/allimg/201611/70-16112p9104u25.jpg','https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png'],
-        price:9.9,
-        repertory:15,
-        description:'防御病毒有效率高',
-        type:'医护',
-        saleVolume:10//销量
-      }],
+      comlist:[],
+      add:{
+        cid:'',
+        cname:'',
+        imgId:[],
+        price:0,
+        repertory:0,
+        description:'',
+        type:0,
+        saleVolume:0//销量
+      },//选择数量界面
     }
   },
 
@@ -77,11 +80,39 @@ export default {
   },
 
   methods: {
-    showadd(){
+    // 获取详情
+    getcomdetail(e){
+      let self = this;
+      let params = {
+        cid: e
+      }
+      self.$fly.get(self.url+"/mall/getCommodityDetail",
+          params
+      )
+      .then(res=>{
+        if(res.data.isSuccess){
+          // 复制给商品信息数组
+            self.$set(self.comlist,0,res.data.content);
+            console.log(self.comlist)
+        }
+      })
+      .catch(err=>{
+        console.log(err)
+        wx.showToast({
+          title: '服务器异常！',
+          icon: 'none',
+          duration: 1500
+        })
+      })
+    },
+    showadd(item){
+      this.add = item
+      console.log(item,this.add)
       this.value = "add";
       this.addtoshopingcart();
     },
-    showbuy(){
+    showbuy(item){
+      this.add = item
       this.value = "buy";
       this.addtoshopingcart();
     },
@@ -108,16 +139,16 @@ export default {
       }
     },
     addcount(){
-      //小于当前库存
-      if(this.count<5){
-        this.count++
-      }else{
-        wx.showToast({
-          title: '库存不足！',
-          icon: 'none',
-          duration: 1500
-      })
-      }
+        //小于当前库存
+        if(this.count<this.add.repertory){
+          this.count++
+        }else{
+          wx.showToast({
+            title: '库存不足！',
+            icon: 'none',
+            duration: 1500
+        })
+        }
     },
     cofirmadd(){
       let self = this;
@@ -125,24 +156,53 @@ export default {
       console.log(self.count);
       // 添加到购物车接口
       // 根据value决定请求哪个接口
-      self.escshowmask();
+      if(self.value =="add"){
+        self.addtoshoppingcart()
+      }else{
+          //直接购买
+          self.escshowmask();
+      }
+    },
+    addtoshoppingcart(){
+      let self =this;
+      let params = {
+        uid: self.$store.state.openId,
+        cid:self.add.cid,
+        number:self.count
+      }
+      self.$fly.post(self.url+"/shoppingCart/addShoppingItem",self.$qs.stringify(
+                    params
+      ))
+      .then(res=>{
+        if(res.data.isSuccess){
+            // self.getshopcount()//更新购物车数量
+            self.escshowmask()//隐藏添加界面
+            wx.showToast({
+              title: '添加成功！',
+              icon: 'success',
+              duration: 1500
+            })
+        }
+      })
+      .catch(err=>{
+        console.log(err)
+        wx.showToast({
+          title: '服务器异常！',
+          icon: 'none',
+          duration: 1500
+        })
+      })
+
     }
   },
 
   created () {
-    // let app = getApp()
-     //移除角标
-  //  wx.removeTabBarBadge({
-  //    index: 2,
-  //  })
-    let num = 10;
-    wx.setTabBarBadge({
-      index: 1,
-      text: num.toString()
-    })
+
+
   },
   onLoad: function(options){
     console.log(options.id)
+    this.getcomdetail(options.id)
   }
 }
 </script>
@@ -163,10 +223,15 @@ export default {
   // border-radius: 5%;
 }
 .cominfo{
-  margin: 10rpx 0;
+  margin: 10rpx auto;
   background: #fff;
   padding: 0 20rpx;
-  width: 100vw;
+  width: 96vw;
+  .intro{
+    text-indent: 2em;
+    font-size: 25rpx;
+    color: rgb(185, 186, 186);
+  }
   .price{
     color: red;
     display: flex;

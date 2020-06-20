@@ -12,9 +12,8 @@
             <img src="../../../static/images/recinfonone.png" alt="">
             <span>空空如也</span>
         </div>
-        <div v-else>
-            <div  class="myinfo"  :style="{ background: item.isDefault ? 'lightblue' : 'white' }" v-for="(item, index) in infolist" :key="index">
-            <!-- <img src="../../../static/images/dele.png" @click="delinfo(item)" alt="" /> -->
+        <div v-else class="martop">
+            <div  class="myinfo"  :style="{ background: item.default ? 'lightblue' : 'white' }" v-for="(item, index) in infolist" :key="index">
             <div class="receinfo" >
                 <span class="name">收货人：{{ item.name }}</span>
                 <span class="tele">电&ensp; 话：{{ item.telephone }}</span>
@@ -32,12 +31,13 @@
                 <img src="../../../static/images/esc.png" alt="" >
             </div>
             <div class="putinfo">
-                <span >姓 名：<input type="text" v-model="changeform.name"></span>
-                <span >电 话：<input type="text" v-model="changeform.telephone"></span>
-                <span >地 址：<input type="text" v-model="changeform.address"></span>
+                <span >姓 名：<input type="text" v-model="changeform.name" maxlength="5"></span>
+                <span >电 话：<input type="text" v-model="changeform.telephone" maxlength="11"></span>
+                <span >地 址：<input type="text" v-model="changeform.address" maxlength="25"></span>
                 <span >
-                    <button style="background:red;color:white" @click="deleinfo()">删除</button>
+                    <button style="background:lightblue;width:180rpx" @click="defaultchange()">置为默认</button>
                     <button @click="surechange()">修改</button>
+                    <button style="background:red;color:white" @click="deleinfo()">删除</button>
                 </span>
             </div>
         </div>
@@ -49,31 +49,32 @@
 export default {
   data() {
     return {
-        showmask:true,
+        showmask:false,
         listnone:false,//列表是否为空
         changeform:{
-            sid:'',
+            sid:0,
             name:'',
             telephone:'',
-            address:''
+            address:'',
+            default: false,
         },
         infolist: [
-            {
-            sid: "0",
-            uid: "11111",
-            name: "马义行",
-            telephone: "18487315405",
-            address: "云南昭通",
-            isDefault: true,
-            },
-            {
-            sid: "1",
-            uid: "11111",
-            name: "乖乖李",
-            telephone: "18487315405",
-            address: "云南昭通",
-            isDefault: false,
-            },
+            // {
+            // sid: "0",
+            // uid: "11111",
+            // name: "沐雙惜",
+            // telephone: "18481***405",
+            // address: "云南昭通",
+            // default: true,
+            // },
+            // {
+            // sid: "1",
+            // uid: "11111",
+            // name: "乖乖李",
+            // telephone: "18481***405",
+            // address: "云南昭通",
+            // default: false,
+            // },
         ],
     };
   },
@@ -83,9 +84,38 @@ export default {
   },
 
     methods: {
-        defaultinfo(e) {
-            if (!e.isDefault) {
+        defaultchange() {
+            let self = this;
+            if (!self.changeform.default) {
                 //修改默认信息
+                let self = this;
+                let params = {
+                    sid: self.changeform.sid
+                }
+                self.$fly.post(self.url+"/user/setDefault",self.$qs.stringify(
+                    params
+                ))
+                .then(res=>{
+                    if(res.data.isSuccess){
+                        self. escshowmask()
+                        self.getaddresslist()
+                        wx.showToast({
+                            title: '修改默认信息成功！',
+                            icon: 'success',
+                            duration: 1500
+                        })
+                    }
+                })
+                .catch(err=>{
+                    console.log(err)
+                })
+            }
+            else{
+            wx.showToast({
+                title: '该信息已为默认！',
+                icon: 'none',
+                duration: 1500
+            })
             }
         },
         addinfo(){
@@ -102,6 +132,7 @@ export default {
             self.changeform.name = item.name;
             self.changeform.telephone = item.telephone;
             self.changeform.address = item.address;
+            self.changeform.default = item.default;
         },
         // 遮罩层滑动
         TouchMove(){
@@ -114,26 +145,121 @@ export default {
         // 清除表单
         clear(){
             let self = this;
-            self.changeform.sid = '';
+            self.changeform.sid = 0;
             self.changeform.name = '';
             self.changeform.telephone = '';
             self.changeform.address = '';
         },
         surechange(){
             let self = this;
-            console.log(self.changeform.sid)
+            if(self.changeform.address.length<=8){
+              wx.showToast({
+                title: '请填写详细地址！',
+                icon: 'none',
+                duration: 1500
+              })
+            }else if(self.changeform.telephone.length!=11){
+                wx.showToast({
+                    title: '手机号格式不正确！',
+                    icon: 'none',
+                    duration: 1500
+                })
+            }
+            else{
+            let params ={
+                address: self.changeform.address,
+                name:self.changeform.name,
+                telephone:self.changeform.telephone,
+                sid: self.changeform.sid
+              }
+            self.$fly.post(self.url+"/user/updateAddress",
+            self.$qs.stringify(
+                params
+            ))
+            .then(res=>{
+              if(res.data.isSuccess){
+                self. escshowmask()
+                self.getaddresslist()
+              
+              }else{
+                wx.showToast({
+                  title: '修改失败！',
+                  icon: 'none',
+                  duration: 1500
+                })                
+              }
+            })
+            .catch(err=>{
+              console.log(err)
+              wx.showToast({
+                title: '服务器异常！',
+                icon: 'none',
+                duration: 1500
+              })
+            })
+          }
         },
         deleinfo(){
             let self = this;
             console.log(self.changeform.sid)
+            if(self.changeform.default){
+                wx.showToast({
+                    title: '无法删除默认地址！',
+                    icon: 'none',
+                    duration: 1500
+                })
+            }else{
             // 删除接口位置，
-
-            // 清除表单
-            self.clear()
+            let params = {
+                    sid: self.changeform.sid
+                }
+            self.$fly.delete(self.url+"/user/deleteAddress",self.$qs.stringify(
+                    params
+            ))
+            .then(res=>{
+                if(res.data.isSuccess){
+                    wx.showToast({
+                        title: '删除成功！',
+                        icon: 'success',
+                        duration: 1500
+                    })
+                    self. escshowmask()
+                    self.getaddresslist()
+                 }
+            })
+            .catch(err=>{
+               console.log(err)
+            })
+            }
+        },
+        getaddresslist(){
+            //获取收货人信息接口，判断是否为空显示背景图片
+            let self = this; 
+            let params = {
+            uid: self.$store.state.openId
+            }
+            self.$fly.get(self.url+"/user/getAddresses",
+                params
+            )
+            .then(res=>{
+                if(res.data.content.length>0){
+                    self.infolist=res.data.content;
+                }else{
+                    self.listnone = true;
+                }
+            })
+            .catch(err=>{
+                console.log(err)
+                wx.showToast({
+                    title: '服务器异常！',
+                    icon: 'fail',
+                    duration: 1500
+                })
+            })						   
         },
     },
     onShow(){
-        //获取收货人信息接口，判断是否为空显示背景图片
+        this.getaddresslist();
     },
     created() {
         // let app = getApp()
@@ -153,9 +279,14 @@ export default {
 }
 
 .title {
+    position: fixed;
+    z-index: 999;
+    top: 0;
+    left: 50vw;
+    transform: translateX(-50%);
     display: flex;
     width: 96vw;
-    margin: 15rpx auto;
+    margin: 0 auto 15rpx auto;
     padding: 15rpx 0;
     font-size: 40rpx;
     color: black;
@@ -193,6 +324,12 @@ export default {
         font-size: 30rpx;
     }
 }
+.martop{
+    margin-top: 130rpx ;
+    .address{
+        font-size: 25rpx;
+    }
+}
 .myinfo {
     position: relative;
     background-color: #fff;
@@ -215,12 +352,14 @@ export default {
         margin: 15rpx 0;
         display: flex;
         flex-direction: row;
-        font-size: 30rpx;
+        font-size: 25rpx;
         .name {
             width: 250rpx;
+            flex-shrink: 1;
         }
         .tele {
             flex: 1;
+            flex-shrink: 1;
         }
         .changeinfo {
             width: 80rpx;

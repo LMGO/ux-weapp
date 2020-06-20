@@ -1,14 +1,15 @@
 {
   "pages": [
-    "pages/addaddress/main",
+    "pages/inter/main",
+    "pages/shopping-cart/main",
+    "pages/order-detail/main",
+    "pages/myorders/main",
     "pages/myaddress/main",
     "pages/mine/main",
-    "pages/inter/main",
     "pages/sureorder/main",
-    "pages/shopping-cart/main",
     "pages/com-detail/main",
     "pages/index/main",
-    "pages/myorders/main"
+    "pages/addaddress/main"
     
     
   ],

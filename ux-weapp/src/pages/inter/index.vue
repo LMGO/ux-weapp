@@ -1,23 +1,17 @@
 <template>
-<div class="home"  >	
-	<!-- <div class="title" v-if="userName">
-		欢迎登录：<span class="name">{{userName}}</span>
-	</div>	 -->
-	<div class="ceng" v-if="isCeng" @touchmove.stop.prevent="touchmovehandle">		
-		<button @getuserinfo="getVxUserInfo" open-type="getUserInfo" v-if="!userName" class="btn">点击微信授权</button>
+	<div class="ceng">		
+		<button @getuserinfo="getVxUserInfo" open-type="getUserInfo"  class="btn">点击微信授权</button>
 	</div>
-</div>
 </template>
  
 <script>
 const appId="wxf1e194860af08100"   //开发者appid
 const secret="52e06254d441f608831248944f1640a0"  //开发者AppSecret(小程序密钥)	,登录微信小程序平台后-》开发-》开发设置-》开发者ID（AppSecret(小程序密钥)	）生成
- 
+import { formatTime } from '@/utils/index'
+// import { register } from '@/utils/api'
 export default{
 	data(){
 		return{
-			userName:"",
-			isCeng:true,
 			userinfo:{},  //存放用户信息，保存在自己的数据库中  		
 		}
 	},
@@ -27,41 +21,40 @@ export default{
 	methods:{		
 		getVxUserInfo(e){				
 			if(e.target.userInfo){
-				this.userName=e.target.userInfo.nickName;
-				this.isCeng=false;
 				this.isLogin()
-			}else{
-				this.userName="";
-				this.isCeng=true;
-			}	
+			}
 		},		
-		isLogin(){		
-			var _this=this;
+		  isLogin(){		
+			var self=this;
 	        wx.getSetting({
 	          success(res) {    	          	 
 	            if (!res.authSetting['scope.userInfo']) {//未授权getUserInfo            	
 	              wx.authorize({
-	                scope: 'scope.getUserInfo',
-	                success(res) {	                
-	                  // 用户已经同意小程序使用用户信息，后续调用 wx.userInfo 接口不会弹窗询问       
-	                  console.log(res)
-	                  _this.isCeng=false;
-					  _this.userName=res.target.userInfo.nickName;
-	                  
-	                },
-	                fail(err){
-	                 console.log(err)
-	                }
-	              })
-	            }else{//已授权
-	              wx.getUserInfo({
-	                success(res) {	
-	                	_this.loginOk(res)
-	                },
-	                fail(err) {
-	                  console.log(err)
-	                }
-	              })
+						scope: 'scope.userInfo',
+						success(res) {	                
+						// 用户已经同意小程序使用用户信息，后续调用 wx.userInfo 接口不会弹窗询问       
+							wx.getUserInfo({
+								success(res) {
+									self.loginOk(res);
+								},
+								fail(err) {
+								console.log(err)
+								}
+							})
+						},
+						fail(err){
+							console.log(err)
+						}
+				 	})
+				}else{//已授权
+					wx.getUserInfo({
+						success(res) {
+							self.loginOk(res);
+						},
+						fail(err) {
+						console.log(err)
+						}
+					})
 	            }
 	          }
 	        })
@@ -69,42 +62,60 @@ export default{
 		touchmovehandle(){ //解决vue蒙层滑动穿透问题
 			
 		},		
-		loginOk(res){  //登录成功后的信息处理
-			let _this=this;
-			_this.userinfo.encryptedData=res.encryptedData;
-	        _this.userinfo.iv=res.iv;
-	        _this.userinfo.rawData=res.rawData;
-	        _this.userinfo.signature=res.signature;
-	        _this.userinfo.infos=res.userInfo;
-	        _this.getOpenId()
-	        _this.isCeng=false;
-	        _this.userName=res.userInfo.nickName;
-            console.log(_this.userinfo);
-            _this.$store.dispatch('getMyWxInfo', _this.userinfo.infos);
-		    console.log(_this.$store.state.myWxInfo);
-			const url = '../index/main';
-			mpvue.switchTab({ url });
+		 loginOk(res){  //登录成功后的信息处理
+			let self=this;
+			self.userinfo.encryptedData=res.encryptedData;
+	        self.userinfo.iv=res.iv;
+	        self.userinfo.rawData=res.rawData;
+	        self.userinfo.signature=res.signature;
+	        self.userinfo.infos=res.userInfo;
+	        self.userName=res.userInfo.nickName;
+            self.$store.dispatch('getMyWxInfo', self.userinfo.infos);
+			self.getOpenId()
 		},
 		getOpenId(){  //获取用户的openid
-			let _this=this;
+			let self = this;
 			wx.login({
 			  success(res) {
 			  	  	if (res.code) {
 				      // 发起网络请求
 				      wx.request({
-				        url: 'https://api.weixin.qq.com/sns/jscode2session',
-				        data: {
-				            appid:appId,  //开发者appid
-				            secret:secret, //开发者AppSecret(小程序密钥)	
-				            grant_type:"authorization_code",  //默认authorization_code
-				            js_code: res.code    //wx.login登录获取的code值
-				        },
-				        success(res) {
-				        	_this.userinfo.openid=res.data.openid;
-							_this.userinfo.session_key=res.data.session_key;
-							_this.$store.dispatch('getOpenId', _this.userinfo.openid);
-							console.log(_this.$store.state.openId);
-                  		//注册接口位置						   
+							url: 'https://api.weixin.qq.com/sns/jscode2session',
+							data: {
+								appid:appId,  //开发者appid
+								secret:secret, //开发者AppSecret(小程序密钥)	
+								grant_type:"authorization_code",  //默认authorization_code
+								js_code: res.code    //wx.login登录获取的code值
+							},
+							success(res) {
+								self.userinfo.openid=res.data.openid;
+								self.userinfo.session_key=res.data.session_key;
+								self.$store.dispatch('getOpenId', self.userinfo.openid);
+								console.log(self.$store.state.openId);
+								// 注册接口位置
+								let params ={
+										registrationDate: formatTime(new Date()),
+										uid: self.$store.state.openId
+									}
+									console.log(params)
+								self.$fly.post(self.url+"/user/register",
+										params
+								)
+								.then(res=>{
+									console.log(res.data.isSuccess)
+									if(res.data.isSuccess){
+										const url = '../index/main';
+										mpvue.switchTab({ url });
+									}
+								})
+								.catch(err=>{
+									console.log(err)
+									wx.showToast({
+										title: '服务器异常！',
+										icon: 'none',
+										duration: 1500
+									})
+								})						   
 						}
 				      })
 				    } else {
@@ -119,24 +130,13 @@ export default{
 </script>
  
 <style scoped>
-.home{
-	padding-bottom: 140rpx;
-}
+
 .btn{
 	background:#CCCCCC;
 	color: black;
 	width: 60%;
 }
-	
-.title{
-	text-align: right;
-	font-size: 15px;
-	padding-right: 30rpx;
-	padding-top: 30rpx;
-}
-.name{
-	color: royalblue;
-}
+
 .ceng{
 	position: fixed;
 	top: 0;

@@ -14,7 +14,7 @@ export default {
     },
     getPid: () => {
       let mydate = new Date();
-      return "zjyd"+mydate.getDay()+ mydate.getHours()+ mydate.getMinutes()+mydate.getSeconds()+mydate.getMilliseconds();
+      return "UX"+mydate.getDay()+ mydate.getHours()+ mydate.getMinutes()+mydate.getSeconds()+mydate.getMilliseconds();
     },
     createComparison: property => {
       return function (object1, object2) {
