@@ -53,6 +53,8 @@
 
 <script>
 import { formatTime } from '@/utils/index'
+import { sendMessage } from '@/utils/socket'
+
 export default {
   data () {
     return {
@@ -146,6 +148,13 @@ export default {
                   .then(res=>{
                     console.log(res)
                   if(res.data.isSuccess){
+                      let params = {
+                        toUserId:"manage",
+                        contentText:true
+                      }
+                      let data = JSON.stringify(params)
+                      sendMessage(data)
+
                       wx.showToast({
                         title: '支付成功！',
                         icon: 'success',
@@ -256,6 +265,7 @@ export default {
           console.log(this.orderdetail)
           wx.hideLoading()
           if(this.orderdetail[0].address.sid!=null){
+            wx.hideLoading()
             this.changeoradd="切换"
                 // 隐藏电话号码，可使用截取字符方法
             this. orderdetail[0].address.telephone.toString();
@@ -270,6 +280,13 @@ export default {
       })
       .catch(err=>{
         console.log(err)
+        wx.hideLoading()
+        wx.showToast({
+                        title: '系统异常！',
+                        icon: 'none',
+                        duration: 1500
+                      })
+        
       })
 
     },

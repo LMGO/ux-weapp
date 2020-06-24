@@ -105,7 +105,9 @@
 </template>
 
 <script>
-import card from "@/components/card";
+import { openSocket } from '@/utils/socket'
+import { messageApi} from '@/utils/api'
+
 export default {
   data() {
     return {
@@ -187,7 +189,6 @@ export default {
   },
 
   components: {
-    card
   },
 
   methods: {
@@ -286,7 +287,7 @@ export default {
         console.log(err)
         wx.showToast({
           title: '服务器异常！',
-          icon: 'fail',
+          icon: 'none',
           duration: 1500
         })
       })						   
@@ -367,14 +368,32 @@ export default {
         })
       })
 
-    }
+    },
+     // 获取消息页面新消息数量角标
+    getcount(){
+      let self = this;
+      let params = {
+        uid: self.$store.state.openId
+      }
+      messageApi.newmessageCount(params).then(res=>{
+        console.log(res.data)
+        if(res.data.content!=undefined&&res.data.content.length>0){
+            let num = res.data.content.length;
+            wx.setTabBarBadge({
+              index: 2,
+              text: num.toString()
+            })
+        }else{
+          wx.removeTabBarBadge({
+            index: 2,
+          });
+        }
+      })
+    },
   },
 
   created() {
 
-  },
-  onLaunch(){
-    
   },
   computed: {
  //过滤方法
@@ -397,12 +416,24 @@ export default {
   }
 },
   onShow(){
+     openSocket(   
+       function(data){
+        if(data.data!="连接成功"){
+          wx.showToast({
+                title: '您的一个订单已经发货！',
+                icon: 'none',
+                duration: 1500
+            });
+        }
+    }
+    );
     let self = this;
     // 获取热销列表
     wx.showLoading({ title: '拼命加载中...' })
     self.gethotlist() 
     // 获取购物车数量
     self.getshopcount()
+    self.getcount()
 }
 };
 </script>

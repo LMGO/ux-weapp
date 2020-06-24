@@ -59,6 +59,7 @@
 <script>
 
 import { formatTime } from '@/utils/index'
+import { sendMessage } from '@/utils/socket'
 
 export default {
   data () {
@@ -125,7 +126,7 @@ export default {
           this.status = "等待买家付款~";
           this.topay = true
           this.tosurereceive = false;
-        }else if(this.orderdetail[0].status==2||this.orderdetail[0].status==4){
+        }else if(this.orderdetail[0].status==2){
               this.status = "等待卖家发货~";
               this.tosurereceive = false;
               this.topay = false
@@ -158,10 +159,16 @@ export default {
                     oid:e.oid,
                     status:2,//此时为带发货状态
                   }
-                  self.$fly.request(self.url+"/order/updateOrderStatus",  {oid:e.oid,status:2,}, {method:"PUT"})
+                  self.$fly.request(self.url+"/order/updateOrderStatus", self.$qs.stringify(params), {method:"PUT"})
                   .then(res=>{
                   console.log(res)
                   if(res.data.isSuccess){
+                      let params = {
+                        toUserId:"manage",
+                        contentText:true
+                      }
+                      let data = JSON.stringify(params)
+                      sendMessage(data)
                       wx.showToast({
                         title: '支付成功！',
                         icon: 'success',

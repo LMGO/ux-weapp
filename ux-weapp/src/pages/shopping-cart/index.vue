@@ -51,7 +51,7 @@
 </template>
 
 <script>
-
+import { messageApi} from '@/utils/api'
 export default {
   data () {
     return {
@@ -67,6 +67,27 @@ export default {
   },
 
   methods: {
+    // 获取消息页面新消息数量角标
+    getcount(){
+      let self = this;
+      let params = {
+        uid: self.$store.state.openId
+      }
+      messageApi.newmessageCount(params).then(res=>{
+        console.log(res.data)
+        if(res.data.content!=undefined&&res.data.content.length>0){
+            let num = res.data.content.length;
+            wx.setTabBarBadge({
+              index: 2,
+              text: num.toString()
+            })
+        }else{
+          wx.removeTabBarBadge({
+            index: 2,
+          });
+        }
+      })
+    },
     tocomdetail(e){
       console.log(e)
       wx.navigateTo({
@@ -75,7 +96,6 @@ export default {
     },
     // 获取购物车商品数量
     async  getshopcount(){
-        console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhh")
       let self = this;
       let params = {
         uid: self.$store.state.openId
@@ -113,25 +133,47 @@ export default {
       let params = {
         uid: self.$store.state.openId
       }
-    await  self.$fly.get(self.url+"/shoppingCart/getShoppingItems",
+      // wx.request({
+      //     url:self.url+'/shoppingCart/getShoppingItems',
+      //     data: {
+      //           uid: self.$store.state.openId
+      //         },
+      //     method: 'GET', // OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT  
+      //     // header: {}, // 设置请求的 header  
+      //     header: {
+      //       'Content-Type': 'application/json'
+      //     },
+      //     success: function (res) {
+      //       console.log(res.data)
+      //       self.List = res.data.content;
+      //       // that.setData({
+      //       //   list: res.data          //返回二维数组
+      //       //   // views: res.data[0].views,     //查看数
+      //       //   // praise: res.data[0].praise    //点赞数
+      //       // })
+      //       // page++;
+      //     }
+      // })
+      self.$fly.get(self.url+"/shoppingCart/getShoppingItems",
           params
       )
-      .then(async res=>{
+      .then(res=>{
+            console.log(res)
         if(res.data.isSuccess){
             console.log("列表项",res.data.content)
             if(res.data.content != undefined &&res.data.content.length!=0){
-              let arr = res.data.content;
-              for(let i=0;i<arr.length;i++){
-                this.$set(this.List,i,arr[i])
-              }
-              console.log("返回的数组",res.data.content);
+              self.Listdelay = res.data.content;
+              this.$forceUpdate();
+              // for(let i=0;i<arr.length;i++){
+              //   this.$set(this.List,i,arr[i])
+              // }
+              // console.log("返回的数组",res.data.content);
             }
             else{
               this.nothing = true
+              console.log('列表异常')
             }
         }
-        this.$forceUpdate();
-
       })
       .catch(err=>{
         console.log(err)
@@ -293,6 +335,7 @@ export default {
     self.getshopcount()
     //获取购物车列表
     await self.getshoppinglist()
+    self.getcount()
   }
 }
 

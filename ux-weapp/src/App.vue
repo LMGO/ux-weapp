@@ -1,5 +1,11 @@
 <script>
+import { openSocket } from '@/utils/socket'
 export default {
+  data() {
+    return {
+    }
+  },
+
   created () {
     // 调用API从本地缓存中获取数据
     /*
@@ -26,6 +32,25 @@ export default {
   },
   log () {
     console.log(`log at:${Date.now()}`)
+  },
+  onLaunch(){
+    openSocket(
+      function(data){
+        if(data.data!="连接成功"){
+          wx.showToast({
+                title: '您的一个订单已经发货！',
+                icon: 'none',
+                duration: 1500
+            });
+        }else{
+          console.log(data)
+        }
+      }
+    );
+        
+  },
+  destoryed(){
+    
   }
 }
 </script>

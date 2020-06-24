@@ -35,6 +35,7 @@
 </template>
 
 <script>
+import { messageApi} from '@/utils/api'
 
 export default {
   data () {
@@ -59,6 +60,27 @@ export default {
   },
 
   methods: {
+    // 获取消息页面新消息数量角标
+    getcount(){
+      let self = this;
+      let params = {
+        uid: self.$store.state.openId
+      }
+      messageApi.newmessageCount(params).then(res=>{
+        console.log(res.data)
+        if(res.data.content!=undefined&&res.data.content.length>0){
+            let num = res.data.content.length;
+            wx.setTabBarBadge({
+              index: 2,
+              text: num.toString()
+            })
+        }else{
+          wx.removeTabBarBadge({
+            index: 2,
+          });
+        }
+      })
+    },
     totalorder(e){
       wx.navigateTo({
              url:'../myorders/main?value='+e,
@@ -102,6 +124,7 @@ onShow(){
     this.getnumber()
     this.user_head=this.$store.state.myWxInfo.avatarUrl;
     this.user_name=this.$store.state.myWxInfo.nickName;
+    this.getcount()
     
 },
   created () {

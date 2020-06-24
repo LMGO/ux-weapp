@@ -125,6 +125,7 @@
 
 <script>
 import { formatTime } from '@/utils/index'
+import { sendMessage } from '@/utils/socket'
 
 export default {
   components: {
@@ -208,10 +209,16 @@ export default {
                     oid:e.oid,
                     status:2,//此时为带发货状态
                   }
-                  self.$fly.request(self.url+"/order/updateOrderStatus",  {oid:e.oid,status:2,}, {method:"PUT"})
+                  self.$fly.request(self.url+"/order/updateOrderStatus",  self.$qs.stringify(params), {method:"PUT"})
                   .then(res=>{
                   console.log(res)
                   if(res.data.isSuccess){
+                      let params = {
+                        toUserId:"manage",
+                        contentText:true
+                      }
+                      let data = JSON.stringify(params)
+                      sendMessage(data)
                       wx.showToast({
                         title: '支付成功！',
                         icon: 'success',
@@ -275,7 +282,7 @@ export default {
       })
     },
     //确认收货
-    surereceive(item){
+    surereceive(e){
       let self = this;
         let params = {
           oid:e.oid,
@@ -372,10 +379,8 @@ export default {
     z-index: 9999;
     top: 0;
     height: 100rpx;
-    border-bottom: 1px solid rgb(233, 229, 229);
-    // background-color: rgb(247, 250, 243);
-    box-sizing: border-box;
-    opacity: 1;
+    border-bottom: 1px solid rgb(235, 232, 232);
+    background-color: rgb(247, 250, 243);
   }
   .navbar_title {
     color: #000;
