@@ -13,15 +13,15 @@
     "pages/addaddress/main"
   ],
   "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarTitleText": "U鲜",
-    "navigationBarBackgroundColor":"#ff0000",
-    "navigationBarTextStyle": "white"
+    "backgroundTextStyle": "dark",
+    "navigationBarTitleText": "U  鲜",
+    "navigationBarBackgroundColor":"#fff",
+    "navigationBarTextStyle": "black"
   },
   "tabBar": {
-    "color": "#999",
-    "backgroundColor": "#fafafa",
-    "selectedColor": "#333",
+    "color": "black",
+    "backgroundColor": "#fafaff",
+    "selectedColor": "#f10b2e",
     "borderStyle": "white",
 
     "list": [{
@@ -32,7 +32,7 @@
     }, {
       "text": "购物车",
       "pagePath": "pages/shopping-cart/main",
-      "iconPath": "static/tabs/shopping-cart.png",
+      "iconPath": "static/tabs/shopcart.png",
       "selectedIconPath": "static/tabs/shopping-cart.png"
     },{
       "text": "消息",

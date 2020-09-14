@@ -3,13 +3,14 @@
 	"setting": {
 		"urlCheck": false,
 		"es6": false,
+		"enhance": true,
 		"postcss": true,
 		"minified": true,
 		"newFeature": true,
 		"coverView": true,
 		"autoAudits": false,
 		"showShadowRootInWxmlPanel": true,
-		"scopeDataCheck": false,
+		"scopeDataCheck": true,
 		"checkInvalidKey": true,
 		"checkSiteMap": true,
 		"uploadWithSourceMap": true,
@@ -17,7 +18,8 @@
 			"ignore": [],
 			"disablePlugins": [],
 			"outputPath": ""
-		}
+		},
+		"bundle": true
 	},
 	"miniprogramRoot": "dist/wx/",
 	"compileType": "miniprogram",
@@ -25,6 +27,7 @@
 	"projectname": "ux-weapp",
 	"simulatorType": "wechat",
 	"simulatorPluginLibVersion": {},
+	"libVersion": "2.12.2",
 	"condition": {
 		"search": {
 			"current": -1,

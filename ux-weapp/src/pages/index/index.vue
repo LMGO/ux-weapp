@@ -51,7 +51,7 @@
       </div>
       <div :class="{listhot:ishot,list:!ishot}">
       <ul class="ullist">
-        <li v-for="(item,index) in items" :key="index" @click="tocomdetail(item.id)">
+        <li v-for="(item,index) in items" :key="index" @click="tocomdetail(item.cid)">
           <div class="left">
               <img :src="item.imgId[0]" alt="">
           </div>
@@ -118,7 +118,7 @@ export default {
       isdaily: false,
       ismedical: false,
       showmask:false,//添加到购物者的遮罩层
-      images:['https://iknow-pic.cdn.bcebos.com/8ad4b31c8701a18b82ac2fae992f07082938fe8f?x-bce-process=image/resize,m_lfit,w_600,h_800,limit_1','http://pic.ruiwen.com/allimg/201611/70-16112p9104u25.jpg','https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png'],
+      images:['http://cdn.fengblog.xyz/5953e202-d291-42ff-8957-a30aa43eb588timg (3).jpeg','http://cdn.fengblog.xyz/55b28ab8-7de2-4b15-8f0c-e8a83361cb0eu=2697673446,777998154&fm=26&gp=0.jpg','https://img12.iqilu.com/10339/article/202001/30/e97c439173bc7cd43b0587169849cde1.png'],
       showswiper:true,//默认显示热销列表，包含轮播图
       chhoosenumber:true,
       search:'', //搜索
@@ -194,7 +194,7 @@ export default {
   methods: {
     // 热销
     gethotlist() {
-      
+      this.search = ''
       this.ishot = true;
       this.isvagetable = this.meat = this.isseafood = this.isdaily = this.ismedical = false;
       // this.list = e + "列表";
@@ -217,30 +217,35 @@ export default {
 
     },
     getvagetablelist(e) {
+      this.search = ''
       this.isvagetable = true;
       this.ishot = this.ismeat = this.isseafood = this.isdaily = this.ismedical = false;
       this.showswiper = false;
       this.getotherlist(e)
     },
     getmeatlist(e) {
+      this.search = ''
       this.ismeat = true;
       this.ishot = this.isvagetable = this.isseafood = this.isdaily = this.ismedical = false;
       this.showswiper = false;
       this.getotherlist(e)
     },
     getseafoodlist(e) {
+      this.search = ''
       this.isseafood = true;
       this.ishot = this.isvagetable = this.ismeat = this.isdaily = this.ismedical = false;
       this.showswiper = false;
       this.getotherlist(e)
     },
     getdailylist(e) {
+      this.search = ''
       this.isdaily = true;
       this.ishot = this.isvagetable = this.ismeat = this.isseafood = this.ismedical = false;
       this.showswiper = false;
       this.getotherlist(e)
     },
     getmedicallist(e) {
+      this.search = ''
       this.ismedical = true;
       this.ishot = this.isvagetable = this.ismeat = this.isdaily = this.iisdaily = false;
       this.showswiper = false;
@@ -326,7 +331,16 @@ export default {
     addcount(){
       //小于当前库存
         if(this.count<this.add.repertory){
-          this.count++
+          if(this.count<5){
+              this.count++
+          }else{
+            wx.showToast({
+              title: '限购五件！',
+              icon: 'none',
+              duration: 1500
+          })
+        }
+          
         }else{
           wx.showToast({
             title: '库存不足！',
@@ -416,17 +430,7 @@ export default {
   }
 },
   onShow(){
-     openSocket(   
-       function(data){
-        if(data.data!="连接成功"){
-          wx.showToast({
-                title: '您的一个订单已经发货！',
-                icon: 'none',
-                duration: 1500
-            });
-        }
-    }
-    );
+    this.search = ''
     let self = this;
     // 获取热销列表
     wx.showLoading({ title: '拼命加载中...' })
@@ -455,10 +459,12 @@ export default {
   display: flex;
   justify-content: space-around;
   width: 100vw;
-  border-top: 1px solid white;
+  border-top: 1px solid rgb(231, 230, 230);
   list-style: none;
-  background: red;
-  color: white;
+  // background:#5ad9fe;
+  background-color:#ffffff;
+  // background-color: rgb(75, 148, 177);
+  color: black;
   box-sizing: border-box;
   height:60rpx ;
   // transition: 2s;
@@ -468,16 +474,20 @@ export default {
 li {
   margin:8rpx 0px; ;
   letter-spacing: 8rpx;
-  font-size: 40rpx;
-  font-family: "Times New Roman", Times, serif;
+  font-size: 30rpx;
+  padding: 10rpx 5rpx;
+  text-align: center;
+  // font-family: "Times New Roman", Times, serif;
 }
 }
 /*当前选中*/
 .active {
-  color: yellow;
-  font-size: 45;
-  border-bottom: 1px solid white;
+  color:black;
+  font-size: 35rpx;
+  border-bottom: 2px solid red;
+  border-radius: 20%;
   text-align: center;
+  // font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 .content {
   margin-top:60rpx;

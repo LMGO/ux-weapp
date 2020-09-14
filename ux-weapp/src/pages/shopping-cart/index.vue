@@ -163,7 +163,11 @@ export default {
             console.log("列表项",res.data.content)
             if(res.data.content != undefined &&res.data.content.length!=0){
               self.Listdelay = res.data.content;
-              this.$forceUpdate();
+              // console.log("--------------------------")
+              // console.log(self.Listdelay)
+              // console.log("--------------------------")
+              // self.List = self.Listdelay;
+              // this.$forceUpdate();
               // for(let i=0;i<arr.length;i++){
               //   this.$set(this.List,i,arr[i])
               // }
@@ -193,22 +197,21 @@ export default {
         this.$set(e,"number",e.number);
         //同步数据到数据库
         await  this.changenumber(e)
-              //  this.$set(e,"checked",true);
+        this.$set(e,"checked",true);
       }
 
     },
    async addcount(e){
       //查库存
-      if(e.number<5){
+      if(e.number<10){
         e.number = e.number +1;
         this.$set(e,"number",e.number);
         await  this.changenumber(e)
-              //  this.$set(e,"checked",true);
-
+        this.$set(e,"checked",true);
       }
       else{
         wx.showToast({
-          title: '该商品限购5件！',
+          title: '该商品限购10件！',
           icon: 'none',
           duration: 1500
       })
@@ -232,8 +235,8 @@ export default {
       )
       .then(async res=>{
         if(res.data.isSuccess){
-          console.log("下面要更新列表")
-          await  this.getshoppinglist();
+          // console.log("下面要更新列表")
+          // await  this.getshoppinglist();
         }
       })
       .catch(err=>{
@@ -316,7 +319,10 @@ export default {
     getlist:function(){
       let self = this;
       self.List = self.Listdelay;
+      console.log("--------------------------")
       console.log(self.List)
+      console.log("--------------------------")
+      self.$forceUpdate()
       return self.List;
     }
     },

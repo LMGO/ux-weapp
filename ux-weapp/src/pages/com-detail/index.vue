@@ -141,7 +141,15 @@ export default {
     addcount(){
         //小于当前库存
         if(this.count<this.add.repertory){
-          this.count++
+          if(this.count<5){
+              this.count++
+          }else{
+              wx.showToast({
+                title: '限购五件！',
+                icon: 'none',
+                duration: 1500
+            })
+          }
         }else{
           wx.showToast({
             title: '库存不足！',

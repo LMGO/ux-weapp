@@ -189,7 +189,7 @@ export default {
         params
       )
       .then(res=>{
-        this.ordersList1 = res.data.content
+        this.ordersList1 = res.data.content.reverse()
         console.log(res)
       })
       .catch(err=>{
@@ -253,7 +253,7 @@ export default {
         params
       )
       .then(res=>{
-        this.ordersList2 = res.data.content
+        this.ordersList2 = res.data.content.reverse()
         console.log(res)
       })
       .catch(err=>{
@@ -274,7 +274,7 @@ export default {
         params
       )
       .then(res=>{
-        this.ordersList3 = res.data.content
+        this.ordersList3 = res.data.content.reverse()
         console.log(res)
       })
       .catch(err=>{
@@ -323,7 +323,7 @@ export default {
         params
       )
       .then(res=>{
-        this.ordersList4 = res.data.content
+        this.ordersList4 = res.data.content.reverse()
         console.log(res)
       })
       .catch(err=>{

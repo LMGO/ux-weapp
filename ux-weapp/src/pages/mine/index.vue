@@ -117,7 +117,37 @@ export default {
       .catch(err=>{
           console.log(err)
       })
-    }
+    },
+    getshopcount(){
+      let self = this;
+      let params = {
+        uid: self.$store.state.openId
+      }
+      self.$fly.get(self.url+"/shoppingCart/getItemCount",
+          params
+      )
+      .then(res=>{
+        if(res.data.content>0){
+            let num = res.data.content;
+            wx.setTabBarBadge({
+              index: 1,
+              text: num.toString()
+            })
+        }else{
+          wx.removeTabBarBadge({
+            index: 1,
+          });
+        }
+      })
+      .catch(err=>{
+        console.log(err)
+        wx.showToast({
+          title: '服务器异常！',
+          icon: 'none',
+          duration: 1500
+        })
+      })						   
+    },
   },
 onShow(){
     // 获取不同类型订单数量
@@ -125,6 +155,7 @@ onShow(){
     this.user_head=this.$store.state.myWxInfo.avatarUrl;
     this.user_name=this.$store.state.myWxInfo.nickName;
     this.getcount()
+    this.getshopcount()
     
 },
   created () {
@@ -184,7 +215,7 @@ onShow(){
 }
 .aui-well-comm {
     height: 200rpx;
-    background: #ff0000;
+    background: #fff;
     /* background: #fff; */
     padding: 15px;
     position: relative;

@@ -7,7 +7,7 @@ fly.config.baseURL = 'http://106.14.83.188:8080/YouXian'
 
 //*-----------新消息部分-------------*//
 
-// 获取新消息数量
+// 获取未删除消息
 export function  getmesglist(params){
     console.log(params)
     return fly.get("/order/getNotDeleteOrderMsg",params)					   

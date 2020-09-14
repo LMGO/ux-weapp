@@ -7,15 +7,15 @@
         <div class="text">暂无消息</div>
       </div>
     </div>
-    <!-- 购物车列表 -->
+    <!-- 列表 -->
     <div v-else class="card">
         <ul >
             <li v-for="(item,index) in messagelist" :key="index">
               <div :class="{barisread:item.isRead,barisunread:!item.isRead}">
                 <div class="title">
-                  <img src="../../../static/images/dele.png" alt="" @click.stop="del(item)">
+                  <img src="../../../static/images/dele.png" alt="" @click="del(item)">
                   <div class="ourname">U 鲜</div>
-                  <div class="time">{{deliverTime}}2020-02-05 02:05:25</div>
+                  <div class="time">{{item.deliveryTime}}</div>
                 </div>
                 <div class="texttop">
                   <div class="ordertitle">发货提醒 :</div>
@@ -78,13 +78,13 @@ export default {
           uid:e.uid,
           isRead:true,
           isDelete:false,
-          deliverTime:e.deliverTime
+          deliveryTime:e.deliveryTime
         }
         await  messageApi.updatemessage(parmas).then(res=>{
           this.$set(e,"isRead",true);
-        //   wx.navigateTo({
-        //   url:'../order-detail/main?id='+e.oid,
-        // })
+          wx.navigateTo({
+          url:'../order-detail/main?id='+e.oid,
+        })
         }).catch(err=>console.log(err))
       }
       
@@ -117,8 +117,8 @@ export default {
         }
         messageApi.getmesglist(params).then(res=>{
           console.log(res)
-          if(res.data.content.length>0){
-            this.messagelist = res.data.content
+          if(res.data.content!=undefined||res.data.content.length>0){
+            this.messagelist = res.data.content.reverse()
           }
           else{
             this.nothing = true
@@ -131,11 +131,12 @@ export default {
     del(e){
       //删除消息
       let parmas={
+          id:e.id,
           oid:e.oid,
           uid:e.uid,
           isRead:true,
           isDelete:true,
-          deliverTime:e.deliverTime
+          deliveryTime:e.deliveryTime
         }
       messageApi.updatemessage(parmas).then(res=>{
         this.getmeaasgelist();

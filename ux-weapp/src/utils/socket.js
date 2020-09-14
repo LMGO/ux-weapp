@@ -34,7 +34,8 @@ let globalData ={
        //   message = jj;
        // }
        console.log("【websocket监听到消息】内容如下：");
-        callback(message)
+       console.log(message)
+      callback(message)
      })
    }
      

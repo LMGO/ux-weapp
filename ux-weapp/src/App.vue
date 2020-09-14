@@ -1,5 +1,7 @@
 <script>
 import { openSocket } from '@/utils/socket'
+import { closeSocket } from '@/utils/socket'
+
 export default {
   data() {
     return {
@@ -50,7 +52,7 @@ export default {
         
   },
   destoryed(){
-    
+    closeSocket()
   }
 }
 </script>
